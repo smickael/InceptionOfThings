@@ -1,0 +1,475 @@
+# ================================
+# APP 1 - Deployment et Service avec Init Container
+# ================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app1
+  labels:
+    app: app1
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app1
+  template:
+    metadata:
+      labels:
+        app: app1
+    spec:
+      initContainers:
+      - name: init-html
+        image: alpine
+        command: ['sh', '-c']
+        args:
+        - |
+          apk add --no-cache gettext
+          envsubst < /templates/index.html > /usr/share/nginx/html/index.html
+          echo "HTML generated with pod info for app1"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: app1-content
+          mountPath: /usr/share/nginx/html
+        - name: app1-templates
+          mountPath: /templates
+      containers:
+      - name: app1
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: app1-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: app1-content
+        emptyDir: {}
+      - name: app1-templates
+        configMap:
+          name: app1-templates
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app1-service
+spec:
+  selector:
+    app: app1
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app1-templates
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Application 1</title>
+        <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet'>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Ubuntu"; }
+            body { font-family: -apple-system, sans-serif; background-color: #333333; color: white; min-height: 100vh; display: flex; flex-direction: column; }
+            .header { padding: 80px; text-align: center; }
+            .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: start; }
+            .section-title { background-color:#505050; width:100%; font-size: 42px; letter-spacing: -1px; text-transform: uppercase; text-align: center; padding: 40px 0px; margin-bottom: 60px; border-top: 2px solid #909090; border-bottom: 2px solid #909090; }
+            .info-row { display: flex; margin-bottom: 20px; align-items: center; padding: 0px 40px; }
+            .info-row:last-child { margin-bottom: 0; }
+            .info-label { font-size: 18px; color: rgba(255,255,255,0.8); width: 140px; text-align: right; margin-right: 20px; }
+            .info-value { font-size: 18px; color: white; font-family: monospace; }
+            .footer { text-align: center; padding: 30px; color: rgba(255,255,255,0.6); font-family: monospace; border-top: 1px solid rgba(255,255,255,0.1); }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://d33wubrfki0l68.cloudfront.net/f84b022686eac86ba972feae8dabf6af8d1dc263/de78f/images/nav_logo.svg"
+                style="max-width:600px;" />
+        </div>
+        <div class="main-content">
+            <h2 class="section-title">APP 1</h2>
+            <div>
+                <div class="info-row">
+                    <span class="info-label">Accessed via:</span>
+                    <span class="info-value">app1.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Replicas:</span>
+                    <span class="info-value">1</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pod:</span>
+                    <span class="info-value">${POD_NAME}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pod IP:</span>
+                    <span class="info-value">${POD_IP}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Node:</span>
+                    <span class="info-value">${NODE_NAME}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Namespace:</span>
+                    <span class="info-value">${POD_NAMESPACE}</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            smickaelS/p2:1.10.1 (centOS/amd64)
+        </div>
+    </body>
+    </html>
+
+---
+# ================================
+# APP 2 - Deployment et Service (3 replicas) avec Init Container
+# ================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app2
+  labels:
+    app: app2
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: app2
+  template:
+    metadata:
+      labels:
+        app: app2
+    spec:
+      initContainers:
+      - name: init-html
+        image: alpine
+        command: ['sh', '-c']
+        args:
+        - |
+          apk add --no-cache gettext
+          envsubst < /templates/index.html > /usr/share/nginx/html/index.html
+          echo "HTML generated with pod info for app2"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: app2-content
+          mountPath: /usr/share/nginx/html
+        - name: app2-templates
+          mountPath: /templates
+      containers:
+      - name: app2
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: app2-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: app2-content
+        emptyDir: {}
+      - name: app2-templates
+        configMap:
+          name: app2-templates
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app2-service
+spec:
+  selector:
+    app: app2
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app2-templates
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Application 2</title>
+        <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet'>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Ubuntu"; }
+            body { font-family: -apple-system, sans-serif; background-color: #333333; color: white; min-height: 100vh; display: flex; flex-direction: column; }
+            .header { padding: 80px; text-align: center; }
+            .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: start; }
+            .section-title { background-color:#505050; width:100%; font-size: 42px; letter-spacing: -1px; text-transform: uppercase; text-align: center; padding: 40px 0px; margin-bottom: 60px; border-top: 2px solid #909090; border-bottom: 2px solid #909090; }
+            .info-row { display: flex; margin-bottom: 20px; align-items: center; padding: 0px 40px; }
+            .info-row:last-child { margin-bottom: 0; }
+            .info-label { font-size: 18px; color: rgba(255,255,255,0.8); width: 140px; text-align: right; margin-right: 20px; }
+            .info-value { font-size: 18px; color: white; font-family: monospace; }
+            .footer { text-align: center; padding: 30px; color: rgba(255,255,255,0.6); font-family: monospace; border-top: 1px solid rgba(255,255,255,0.1); }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://d33wubrfki0l68.cloudfront.net/f84b022686eac86ba972feae8dabf6af8d1dc263/de78f/images/nav_logo.svg"
+                style="max-width:600px;" />
+        </div>
+        <div class="main-content">
+            <h2 class="section-title">APP 2</h2>
+            <div>
+                <div class="info-row">
+                    <span class="info-label">Accessed via:</span>
+                    <span class="info-value">app2.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Replicas:</span>
+                    <span class="info-value">3</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pod:</span>
+                    <span class="info-value">${POD_NAME}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pod IP:</span>
+                    <span class="info-value">${POD_IP}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Node:</span>
+                    <span class="info-value">${NODE_NAME}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Namespace:</span>
+                    <span class="info-value">${POD_NAMESPACE}</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            smickaelS/p2:1.10.1 (centOS/amd64)
+        </div>
+    </body>
+    </html>
+
+---
+# ================================
+# APP 3 - Deployment et Service (Default) avec Init Container
+# ================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app3
+  labels:
+    app: app3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: app3
+  template:
+    metadata:
+      labels:
+        app: app3
+    spec:
+      initContainers:
+      - name: init-html
+        image: alpine
+        command: ['sh', '-c']
+        args:
+        - |
+          apk add --no-cache gettext
+          envsubst < /templates/index.html > /usr/share/nginx/html/index.html
+          echo "HTML generated with pod info for app3"
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        volumeMounts:
+        - name: app3-content
+          mountPath: /usr/share/nginx/html
+        - name: app3-templates
+          mountPath: /templates
+      containers:
+      - name: app3
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: app3-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: app3-content
+        emptyDir: {}
+      - name: app3-templates
+        configMap:
+          name: app3-templates
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: app3-service
+spec:
+  selector:
+    app: app3
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app3-templates
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Application 3 - Default</title>
+        <link href='https://fonts.googleapis.com/css?family=Ubuntu' rel='stylesheet'>
+        <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Ubuntu"; }
+            body { font-family: -apple-system, sans-serif; background-color: #333333; color: white; min-height: 100vh; display: flex; flex-direction: column; }
+            .header { padding: 80px; text-align: center; }
+            .main-content { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: start; }
+            .section-title { background-color:#505050; width:100%; font-size: 42px; letter-spacing: -1px; text-transform: uppercase; text-align: center; padding: 40px 0px; margin-bottom: 60px; border-top: 2px solid #909090; border-bottom: 2px solid #909090; }
+            .info-row { display: flex; margin-bottom: 20px; align-items: center; padding: 0px 40px; }
+            .info-row:last-child { margin-bottom: 0; }
+            .info-label { font-size: 18px; color: rgba(255,255,255,0.8); width: 140px; text-align: right; margin-right: 20px; }
+            .info-value { font-size: 18px; color: white; font-family: monospace; }
+            .footer { text-align: center; padding: 30px; color: rgba(255,255,255,0.6); font-family: monospace; border-top: 1px solid rgba(255,255,255,0.1); }
+        </style>
+    </head>
+    <body>
+        <div class="header">
+            <img src="https://d33wubrfki0l68.cloudfront.net/f84b022686eac86ba972feae8dabf6af8d1dc263/de78f/images/nav_logo.svg"
+                style="max-width:600px;" />
+        </div>
+        <div class="main-content">
+            <h2 class="section-title">APP 3</h2>
+            <div>
+                <div class="info-row">
+                    <span class="info-label">Accessed via:</span>
+                    <span class="info-value">app3.com</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Replicas:</span>
+                    <span class="info-value">1</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pod:</span>
+                    <span class="info-value">${POD_NAME}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Pod IP:</span>
+                    <span class="info-value">${POD_IP}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Node:</span>
+                    <span class="info-value">${NODE_NAME}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Namespace:</span>
+                    <span class="info-value">${POD_NAMESPACE}</span>
+                </div>
+            </div>
+        </div>
+        <div class="footer">
+            smickaelS/p2:1.10.1 (centOS/amd64)
+        </div>
+    </body>
+    </html>
+
+---
+# ================================
+# INGRESS CONFIGURATION
+# ================================
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: multi-app-ingress
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - host: app1.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app1-service
+            port:
+              number: 80
+  - host: app2.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app2-service
+            port:
+              number: 80
+  - http:  # Default backend (no host specified)
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: app3-service
+            port:
+              number: 80
