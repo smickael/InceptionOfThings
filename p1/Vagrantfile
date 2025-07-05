@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
 			   v.memory = "1024"
 			   v.cpus = 1
 		  end
-	  control.vm.provision "shell", path: "install_server.sh"
+	  control.vm.provision "shell", path: "scripts/install_server.sh"
 	  end
 	  
 	config.vm.define "smickaelSW" do |agent|
@@ -24,7 +24,7 @@ Vagrant.configure("2") do |config|
 			   v.memory = "1024"
 			   v.cpus = 1
 		  end
-	  agent.vm.provision "shell", path: "install_worker.sh"
+	  agent.vm.provision "shell", path: "scripts/install_worker.sh"
 	  end  
   end
   

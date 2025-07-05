@@ -42,6 +42,11 @@ graph TD
 - `deploysAndIngress.yaml`: YAML manifest that describes what to deploy in your Kubernetes cluster.
 - `install.sh`: script that transforms a blank VM into a working Kubernetes cluster.
 - `Vagrantfile`: used with Vagrant, a tool that allows you to quickly create reproducible virtual machines for development.
+- Add the following lines in your /etc/hosts:
+``` bash
+192.168.56.110 app1.com
+192.168.56.110 app2.com
+``` 
 
 ## Applications deployments
 
@@ -51,20 +56,6 @@ vagrant up
 
 # Connect to VM with ssh 
 vagrant ssh smickaelS 
-
-# Configure kubectl 
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml 
-# Save config in a file 
-cat > /vagrant/k3s-apps.yaml << 'EOF' 
-# [Paste YAML manifest here] 
-EOF 
-
-# This configures access to Kubernetes and prepares for deployment.
-# `kubectl` (the Kubernetes client) needs to know where and how to 
-# connect to your cluster. The k3s.yaml file contains Kubernetes 
-# server address, security certificates, authentication tokens.
-# /vagrant/ is a shared folder between your host machine and the VM.
-# Everything you put in /vagrant/ is automatically synced.
 
 # Deploy applications 
 kubectl apply -f /vagrant/k3s-apps.yaml 
@@ -109,7 +100,7 @@ kubectl describe ingress multi-app-ingress
 
 ``` bash
 kubectl get pods -l app=app2 -o wide
-kubectl scale deployment app2 --replicas=5  # Démonstration du scaling
+kubectl scale deployment app2 --replicas=5  # Scaling demo
 ```
 
 ## Logs

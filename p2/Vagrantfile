@@ -8,9 +8,9 @@ Vagrant.configure("2") do |config|
       control.vm.provider "virtualbox" do |v|
         v.name = "smickaelS"
         v.gui = false
-        v.memory = "2048"  # Augmenté pour supporter plus d'apps
+        v.memory = "2048"
         v.cpus = 2
       end
-      control.vm.provision "shell", path: "install_server.sh"
+      control.vm.provision "shell", path: "scripts/install_server.sh"
     end
   end
