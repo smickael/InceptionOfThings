@@ -1,0 +1,129 @@
+global:
+  hosts:
+    domain: "42.fr"
+    externalIP: "127.0.0.1"
+    gitlab:
+      name: "gitlab.42.fr"
+    https: false
+    externalUrl: "http://gitlab.42.fr"
+  
+  edition: ce
+  appConfig:
+    lfs:
+      enabled: false
+    artifacts:
+      enabled: false
+    uploads:
+      enabled: false
+    packages:
+      enabled: false
+
+  minio:
+    enabled: false
+  
+  ingress:
+    enabled: true
+    configureCertmanager: false
+    class: traefik
+    tls:
+      enabled: true
+
+postgresql:
+  install: true
+  persistence:
+    size: 1Gi
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+redis:
+  install: true
+  persistence:
+    size: 512Mi
+  master:
+    resources:
+      requests:
+        memory: "128Mi"
+        cpu: "50m"
+      limits:
+        memory: "256Mi"
+        cpu: "200m"
+
+certmanager:
+  install: false
+
+certmanager-issuer:
+  email: "disabled@42.fr"
+
+gitlab-issuer:
+  email: "disabled@42.fr"
+
+nginx-ingress:
+  enabled: false
+
+prometheus:
+  install: false
+
+gitlab-runner:
+  install: false
+
+gitlab:
+  webservice:
+    replicas: 1
+    resources:
+      requests:
+        memory: "1Gi"
+        cpu: "300m"
+      limits:
+        memory: "2Gi"
+        cpu: "1"
+  
+  sidekiq:
+    replicas: 1
+    resources:
+      requests:
+        memory: "2Gi"
+        cpu: "500m"
+      limits:
+        memory: "4Gi"
+        cpu: "1500m"
+  
+  toolbox:
+    enabled: false
+  
+  kas:
+    enabled: false
+  
+  gitlab-shell:
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+  
+  registry:
+    resources:
+      requests:
+        memory: "64Mi"
+        cpu: "50m"
+      limits:
+        memory: "128Mi"
+        cpu: "100m"
+  
+  gitaly:
+    resources:
+      requests:
+        memory: "256Mi"
+        cpu: "100m"
+      limits:
+        memory: "512Mi"
+        cpu: "300m"
+
+gitlab-exporter:
+  enabled: false
