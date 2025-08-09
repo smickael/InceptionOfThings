@@ -53,12 +53,6 @@ if [ $STEP_START -le 9 ]; then
     "$SCRIPT_DIR/scripts/09-setup-argocd-gitlab.sh"
 fi
 
- # Application deployment
-if [ $STEP_START -le 10 ]; then
-    echo "Step 10: Deploying the application..."
-    "$SCRIPT_DIR/scripts/10-deploy-app.sh"
-fi
-
 echo "=== Deployment complete ==="
 echo "🎯 Service access:"
 echo "   ArgoCD: http://argocd.42.fr"

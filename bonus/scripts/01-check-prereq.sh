@@ -1,7 +1,6 @@
 #!/bin/bash
 set -e
 
-done
 for host in gitlab.42.fr argocd.42.fr app.42.fr; do
     if ! grep -q "127.0.0.1 $host" /etc/hosts; then
         echo "Adding $host to /etc/hosts"
