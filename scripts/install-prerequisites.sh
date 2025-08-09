@@ -61,14 +61,17 @@ if ! command -v VBoxManage &>/dev/null; then
     echo "➡️  Installation de VirtualBox version $VBOX_VERSION ..."
     wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | sudo gpg --yes --dearmor -o /usr/share/keyrings/oracle-virtualbox-2016.gpg
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/oracle-virtualbox-2016.gpg] https://download.virtualbox.org/virtualbox/debian $(lsb_release -cs) contrib" | sudo tee /etc/apt/sources.list.d/virtualbox.list
+    sudo apt-get update
+
     if ! apt-cache madison virtualbox-7.0 | grep -q "$VBOX_VERSION"; then
         echo "❌ Version VirtualBox $VBOX_VERSION non trouvée dans le dépôt."
         echo "Versions disponibles :"
         apt-cache madison virtualbox-7.0
         exit 1
     fi
+
     sudo apt-get install -y virtualbox-7.0="$VBOX_VERSION"
-    sudo apt-get install build-essential dkms linux-headers-$(uname -r)
+    sudo apt-get install -y build-essential dkms linux-headers-$(uname -r)
     sudo /sbin/vboxconfig
 fi
 
@@ -105,7 +108,6 @@ if ! command -v sshd &>/dev/null; then
     echo "➡️  Installation de openssh-server..."
     sudo apt-get update
     sudo apt-get install -y openssh-server
-    # sudo systemctl enable ssh
 fi
 
 # install argocd cli
