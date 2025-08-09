@@ -68,6 +68,8 @@ if ! command -v VBoxManage &>/dev/null; then
         exit 1
     fi
     sudo apt-get install -y virtualbox-7.0="$VBOX_VERSION"
+    sudo apt-get install build-essential dkms linux-headers-$(uname -r)
+    sudo /sbin/vboxconfig
 fi
 
 # Vagrant
